@@ -8,5 +8,11 @@ class Settings:
         self.screen_height = 500
         """Назначение цвета фона"""
         self.bg_color = 230, 230, 230
-        self.ship_speed = 0.5
-
+        # скорость движения корабля
+        self.ship_speed = 1
+        # Параетры снаряда
+        self.bullet_speed = 1
+        self.bullet_width = 3
+        self.bullet_height = 15
+        self.bullet_color = 230, 60, 60
+        self.bullet_allowed = 3

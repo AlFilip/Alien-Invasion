@@ -5,6 +5,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 
 class AlienInvasion:
@@ -21,6 +22,8 @@ class AlienInvasion:
         pygame.display.set_caption("Alien Invasion")
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+        self._create_fleet()
 
     def _check_events(self):
         """Отслеживание событий клавиатуры и мыши"""
@@ -65,7 +68,32 @@ class AlienInvasion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
 
-    def update_screen(self):
+    def _create_fleet(self):
+        """Создание флота вторжения"""
+        # создание пришельца и добавление его во флот
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        self.aliens.add(alien)
+        available_space_x = self.settings.screen_widht - 2 * alien_width
+        number_aliens_x = available_space_x // (2 * alien_width)
+        self.ship_height = self.ship.rect.height
+        available_space_y = self.settings.screen_height - 3 * alien_height - \
+            self.ship_height
+        number_raws = available_space_y // (2 * alien_height)
+        for row_number in range(number_raws):
+            for alien_number in range(number_aliens_x):
+                self._create_alien(alien_number, row_number)
+
+    def _create_alien(self, alien_number, row_number):
+        """Создание пришельца"""
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.rect.x = alien.x
+        alien.rect.y = alien.rect.height + 2 * alien_height * row_number
+        self.aliens.add(alien)
+
+    def _update_screen(self):
         """Обновляет экран и изображения на нем"""
         # Заливка фона экрана назначенным фоновым цветом
         self.screen.fill(self.settings.bg_color)
@@ -73,6 +101,7 @@ class AlienInvasion:
         self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.aliens.draw(self.screen)
         # Отображение последнего прорисованного экрана
         pygame.display.flip()
 
@@ -81,10 +110,9 @@ class AlienInvasion:
         while True:
             self._check_events()
             self.ship.update()
-
             self._update_bullets()
 
-            self.update_screen()
+            self._update_screen()
 
 
 if __name__ == '__main__':

@@ -94,6 +94,7 @@ class AlienInvasion:
         self.aliens.add(alien)
 
     def _update_aliens(self):
+        """Управляет движением флота"""
         self._check_fleet_edges()
         self.aliens.update()
 

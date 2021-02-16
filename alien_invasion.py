@@ -8,6 +8,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 
 
 class AlienInvasion:
@@ -26,6 +27,7 @@ class AlienInvasion:
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self._create_fleet()
+        self.play_button = Button(self, 'Play')
 
     def _check_events(self):
         """Отслеживание событий клавиатуры и мыши"""
@@ -38,15 +40,40 @@ class AlienInvasion:
                     sys.exit()
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
+
+    def _check_play_button(self, mouse_pos):
+        """запускает новую игру при нажатии кнопки 'Play'"""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            self.settings.initialize_dynamic_settings()
+            self.start_game()
+
+    def start_game(self):
+        # Сброс игровой статистики
+        self.stats.reset_stats()
+        self.stats.game_active = True
+        # Очистка списков пришельцев и снарядов
+        self.aliens.empty()
+        self.bullets.empty()
+        # Создание нового флота и размещение корабля в центре
+        self._create_fleet()
+        self.ship.center_ship()
+        # Убираем указатель мымши
+        pygame.mouse.set_visible(False)
 
     def _check_keydown_events(self, event):
         """Реагирует на нажатие кклавиш"""
-        if event.key == pygame.K_RIGHT:
+        if event.key == pygame.K_RIGHT and self.stats.game_active:
             self.ship.moving_right = True
-        elif event.key == pygame.K_LEFT:
+        elif event.key == pygame.K_LEFT and self.stats.game_active:
             self.ship.moving_left = True
-        elif event.key == pygame.K_SPACE:
+        elif event.key == pygame.K_SPACE and self.stats.game_active:
             self._fire_bullet()
+        elif event.key == pygame.K_SPACE and not self.stats.game_active:
+            self.start_game()
 
     def _check_keyup_events(self, event):
         """Реагирует на отпускание клавиш"""
@@ -72,13 +99,14 @@ class AlienInvasion:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
-        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens,
-                                                False,
-                                                True)
+        pygame.sprite.groupcollide(self.bullets, self.aliens,
+                                                True, True)
         if not self.aliens:
             # удаление снарядов и создание флота
             self.bullets.empty()
             self._create_fleet()
+            # повышение скорости игры
+            self.settings.increase_speed()
 
     def _create_fleet(self):
         """Создание флота вторжения"""
@@ -129,6 +157,7 @@ class AlienInvasion:
             sleep(0.5)
         else:
             self.stats.game_active = False
+            pygame.mouse.set_visible(True)
 
     def _check_aliens_bottom(self):
         scren_rect = self.screen.get_rect()
@@ -159,6 +188,8 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+        if not self.stats.game_active:
+            self.play_button.draw_button()
         # Отображение последнего прорисованного экрана
         pygame.display.flip()
 

@@ -1,16 +1,18 @@
 import pygame
+from pygame.sprite import Sprite
 
 
-class Ship:
+class Ship(Sprite):
     """Класс для управления кораблем."""
 
     def __init__(self, ai_game):
         """Инициализирует корабль и задает его начальную позицию."""
+        super().__init__()
         self.screen = ai_game.screen
         self.screen_rect = ai_game.screen.get_rect()
         self.settings = ai_game.settings
         # Загружает изображение корабля и получает прямоугольник.
-        self.image = pygame.image.load('images/ship.bmp')
+        self.image = pygame.image.load('images/ship_black.bmp')
         self.rect = self.image.get_rect()
         # Каждый новый корабль появляется в середине нижнего края экрана.
         self.rect.midbottom = self.screen_rect.midbottom
